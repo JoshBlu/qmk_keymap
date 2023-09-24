@@ -56,13 +56,13 @@ jobs:
         run : echo "USER_NAME := ${{ env.NAMESPACE }}" >> users/${{ env.NAMESPACE }}/rules.mk
 
       - name: Build firmware
-        run : qmk compile "users/${{ env.NAMESPACE }}/keymap.json"
+        run : qmk compile "users/${{ env.NAMESPACE }}/keymap.json" -j 0 -e TARGET=${{ env.NAMESPACE }}
 
       - name: Archive firmware
         uses: actions/upload-artifact@v3
         continue-on-error: true
         with:
-          name: ${{ matrix.file }}_${{ github.actor }}
+          name: ${{ env.NAMESPACE }}
           path: |
             *.hex
             *.bin
