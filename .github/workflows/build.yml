@@ -18,7 +18,7 @@ jobs:
       - name: Set matrix for build
         id: set-matrix
         #Gets all directories containing a .json file and adds the directory name to the 'keyboard' list
-        run: echo "::set-output name=matrix::{\"keyboard\":[$(echo `ls */*.json` | perl -pe 's/\/.*?\.json /,/g' | perl -pe 's/\/.*?\.json//')]}"
+        run: echo "matrix={\"keyboard\":[$(echo `ls */*.json` | perl -pe 's/\/.*?\.json /,/g' | perl -pe 's/\/.*?\.json//')]}" >> $GITHUB_OUTPUT
 
 
   build:
