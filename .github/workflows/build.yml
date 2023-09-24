@@ -1,0 +1,69 @@
+name: Build QMK firmware
+on: [push, workflow_dispach]
+
+jobs:
+
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    steps:
+      - name: Disable git safe directory checks
+        run : git config --global --add safe.directory '*'
+
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set matrix for build
+        id: set-matrix
+        #Gets all directories containing a .json file and adds the directory name to the 'keyboard' list
+        run: echo "::set-output name=matrix::{\"keyboard\":[$(echo `ls */*.json` | perl -pe 's/\/.*?\.json /,/g' | perl -pe 's/\/.*?\.json//')]}"
+
+
+  build:
+    needs: generate-matrix
+    name: Build ${{ matrix.keyboard }}
+    runs-on: ubuntu-latest
+    container: ghcr.io/qmk/qmk_cli
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix)  }}
+
+    env:
+      NAMESPACE: ${{ github.actor }}_${{ matrix.directory }}
+
+
+    steps:
+      - name: Disable git safe directory checks
+        run : git config --global --add safe.directory '*'
+
+      - name: Checkout QMK
+        uses: actions/checkout@v3
+        with:
+          repository: qmk/qmk_firmware
+          submodules: recursive
+
+      - name: Checkout userspace
+        uses: actions/checkout@v3
+        with:
+          path: users/${{ github.actor }}
+          
+      - name: Copy keyboard files
+        run : mkdir -p users/${{ env.NAMESPACE }} && cp users/${{ github.actor }}/${{ matrix.directory }}/* users/${{ env.NAMESPACE }}
+
+      - name: Set correct userspace name in rules.mk
+        run : echo "USER_NAME := ${{ env.NAMESPACE }}" >> users/${{ env.NAMESPACE }}/rules.mk
+
+      - name: Build firmware
+        run : qmk compile "users/${{ env.NAMESPACE }}/keymap.json"
+
+      - name: Archive firmware
+        uses: actions/upload-artifact@v3
+        continue-on-error: true
+        with:
+          name: ${{ matrix.file }}_${{ github.actor }}
+          path: |
+            *.hex
+            *.bin
+            *.uf2
