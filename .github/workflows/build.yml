@@ -1,5 +1,5 @@
 name: Build QMK firmware
-on: [push, workflow_dispach]
+on: [push, workflow_dispatch]
 
 jobs:
 
