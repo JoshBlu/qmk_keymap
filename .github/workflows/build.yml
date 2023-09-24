@@ -31,7 +31,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix)  }}
 
     env:
-      NAMESPACE: ${{ github.actor }}_${{ matrix.directory }}
+      NAMESPACE: ${{ github.actor }}_${{ matrix.keyboard }}
 
 
     steps:
@@ -50,7 +50,7 @@ jobs:
           path: users/${{ github.actor }}
           
       - name: Copy keyboard files
-        run : mkdir -p users/${{ env.NAMESPACE }} && cp users/${{ github.actor }}/${{ matrix.directory }}/* users/${{ env.NAMESPACE }}
+        run : mkdir -p users/${{ env.NAMESPACE }} && cp users/${{ github.actor }}/${{ matrix.keyboard }}/* users/${{ env.NAMESPACE }}
 
       - name: Set correct userspace name in rules.mk
         run : echo "USER_NAME := ${{ env.NAMESPACE }}" >> users/${{ env.NAMESPACE }}/rules.mk
